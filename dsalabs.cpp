@@ -3779,3 +3779,551 @@ using namespace std;
 //     sum += sumOfLeftLeaves(root->right);
 //     return sum;
 // }
+// #include <bits/stdc++.h>
+// using namespace std;
+
+// // ===================== BASIC TREE STRUCTURES ========================
+// struct TreeNode {
+//     int val;
+//     TreeNode *left, *right;
+//     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+// };
+
+// struct DLL {
+//     int val;
+//     DLL *prev, *next;
+//     DLL(int x) : val(x), prev(NULL), next(NULL) {}
+// };
+
+// // ====================================================================
+// // ========================= Q2: UNIQUE BSTs ============================
+// // ====================================================================
+// vector<TreeNode*> generate(int start, int end) {
+//     if(start > end) return {NULL};
+
+//     vector<TreeNode*> result;
+//     for(int i = start; i <= end; i++) {
+//         vector<TreeNode*> leftTrees = generate(start, i - 1);
+//         vector<TreeNode*> rightTrees = generate(i + 1, end);
+
+//         for(TreeNode* L : leftTrees)
+//             for(TreeNode* R : rightTrees) {
+//                 TreeNode* root = new TreeNode(i);
+//                 root->left = L;
+//                 root->right = R;
+//                 result.push_back(root);
+//             }
+//     }
+//     return result;
+// }
+
+// vector<TreeNode*> generateTrees(int n) {
+//     if(n == 0) return {};
+//     return generate(1, n);
+// }
+
+// // ====================================================================
+// // ==================== Q3: MAXIMUM DEPTH ==============================
+// // ====================================================================
+// int maxDepth(TreeNode* root) {
+//     if(!root) return 0;
+//     return 1 + max(maxDepth(root->left), maxDepth(root->right));
+// }
+
+// // ====================================================================
+// // ==================== Q4: RIGHT VIEW OF TREE =========================
+// // ====================================================================
+// vector<int> rightView(TreeNode* root) {
+//     if(!root) return {};
+//     vector<int> result;
+//     queue<TreeNode*> q;
+//     q.push(root);
+
+//     while(!q.empty()) {
+//         int n = q.size();
+//         for(int i = 0; i < n; i++) {
+//             TreeNode* cur = q.front(); 
+//             q.pop();
+//             if(i == n - 1) result.push_back(cur->val);
+//             if(cur->left) q.push(cur->left);
+//             if(cur->right) q.push(cur->right);
+//         }
+//     }
+//     return result;
+// }
+
+// // ====================================================================
+// // = Q5: BUILD TREE FROM PREORDER + INORDER ============================
+// // ====================================================================
+// TreeNode* buildFromPreIn(vector<int>& preorder, int preStart, int preEnd,
+//                          vector<int>& inorder, int inStart, int inEnd,
+//                          unordered_map<int,int>& pos)
+// {
+//     if(preStart > preEnd || inStart > inEnd) return NULL;
+
+//     TreeNode* root = new TreeNode(preorder[preStart]);
+//     int inRoot = pos[root->val];
+//     int leftCount = inRoot - inStart;
+
+//     root->left = buildFromPreIn(preorder, preStart+1, preStart+leftCount,
+//                                 inorder, inStart, inRoot-1, pos);
+
+//     root->right = buildFromPreIn(preorder, preStart+leftCount+1, preEnd,
+//                                  inorder, inRoot+1, inEnd, pos);
+
+//     return root;
+// }
+
+// TreeNode* buildTreePreIn(vector<int>& preorder, vector<int>& inorder) {
+//     unordered_map<int,int> pos;
+//     for(int i = 0; i < inorder.size(); i++) pos[inorder[i]] = i;
+
+//     return buildFromPreIn(preorder, 0, preorder.size()-1,
+//                           inorder, 0, inorder.size()-1, pos);
+// }
+
+// // ====================================================================
+// // = Q6: BUILD TREE FROM INORDER + POSTORDER ===========================
+// // ====================================================================
+// TreeNode* buildFromInPost(vector<int>& inorder, int inStart, int inEnd,
+//                            vector<int>& postorder, int postStart, int postEnd,
+//                            unordered_map<int,int>& pos)
+// {
+//     if(inStart > inEnd || postStart > postEnd) return NULL;
+
+//     TreeNode* root = new TreeNode(postorder[postEnd]);
+//     int inRoot = pos[root->val];
+//     int leftCount = inRoot - inStart;
+
+//     root->left = buildFromInPost(inorder, inStart, inRoot-1,
+//                                  postorder, postStart, postStart+leftCount-1, pos);
+
+//     root->right = buildFromInPost(inorder, inRoot+1, inEnd,
+//                                   postorder, postStart+leftCount, postEnd-1, pos);
+
+//     return root;
+// }
+
+// TreeNode* buildTreeInPost(vector<int>& inorder, vector<int>& postorder) {
+//     unordered_map<int,int> pos;
+//     for(int i = 0; i < inorder.size(); i++) pos[inorder[i]] = i;
+
+//     return buildFromInPost(inorder, 0, inorder.size()-1,
+//                            postorder, 0, postorder.size()-1, pos);
+// }
+
+// // ====================================================================
+// // ==================== Q7: MERGE 2 BSTs → DLL =========================
+// // ====================================================================
+// void inorderBST(TreeNode* root, vector<int>& arr) {
+//     if(!root) return;
+//     inorderBST(root->left, arr);
+//     arr.push_back(root->val);
+//     inorderBST(root->right, arr);
+// }
+
+// DLL* mergeBSTsToDLL(TreeNode* root1, TreeNode* root2) {
+//     vector<int> A, B;
+//     inorderBST(root1, A);
+//     inorderBST(root2, B);
+
+//     vector<int> merged;
+//     int i = 0, j = 0;
+
+//     while(i < A.size() && j < B.size()) {
+//         if(A[i] < B[j]) merged.push_back(A[i++]);
+//         else merged.push_back(B[j++]);
+//     }
+//     while(i < A.size()) merged.push_back(A[i++]);
+//     while(j < B.size()) merged.push_back(B[j++]);
+
+//     DLL* head = NULL;
+//     DLL* prev = NULL;
+
+//     for(int x : merged) {
+//         DLL* node = new DLL(x);
+//         if(!head) head = node;
+//         else {
+//             prev->next = node;
+//             node->prev = prev;
+//         }
+//         prev = node;
+//     }
+//     return head;
+// }
+//                                                                                                          ASSIGNMENT 9 GRAPHS
+// #include <bits/stdc++.h>
+// using namespace std;
+// using ll = long long;
+// const ll INF = (1LL<<60);
+
+// // -------------------------- Graph utilities --------------------------
+// struct Edge { int u, v; ll w; };
+// struct AdjEdge { int to; ll w; };
+
+// // -------------------------- BFS & DFS (generic) ----------------------
+// vector<int> bfs_from(int src, const vector<vector<AdjEdge>>& adj) {
+//     int n = (int)adj.size();
+//     vector<int> dist(n, -1);
+//     queue<int> q;
+//     dist[src] = 0;
+//     q.push(src);
+//     while(!q.empty()) {
+//         int u = q.front(); q.pop();
+//         for(auto &e : adj[u]) {
+//             int v = e.to;
+//             if(dist[v] == -1) {
+//                 dist[v] = dist[u] + 1;
+//                 q.push(v);
+//             }
+//         }
+//     }
+//     return dist;
+// }
+
+// // iterative DFS (returns discovery order)
+// vector<int> dfs_iter(int src, const vector<vector<AdjEdge>>& adj) {
+//     int n = (int)adj.size();
+//     vector<char> vis(n, 0);
+//     vector<int> order;
+//     stack<int> st;
+//     st.push(src);
+//     while(!st.empty()) {
+//         int u = st.top(); st.pop();
+//         if(vis[u]) continue;
+//         vis[u] = 1;
+//         order.push_back(u);
+//         // push neighbors in reverse so that lower-index visited earlier (optional)
+//         for(auto it = adj[u].rbegin(); it != adj[u].rend(); ++it) {
+//             if(!vis[it->to]) st.push(it->to);
+//         }
+//     }
+//     return order;
+// }
+
+// // recursive DFS (fills visited)
+// void dfs_rec_util(int u, const vector<vector<AdjEdge>>& adj, vector<char>& vis, vector<int>& order) {
+//     vis[u] = 1;
+//     order.push_back(u);
+//     for(auto &e : adj[u]) if(!vis[e.to]) dfs_rec_util(e.to, adj, vis, order);
+// }
+// vector<int> dfs_rec(int src, const vector<vector<AdjEdge>>& adj) {
+//     int n = (int)adj.size();
+//     vector<char> vis(n, 0);
+//     vector<int> order;
+//     dfs_rec_util(src, adj, vis, order);
+//     return order;
+// }
+
+// // -------------------------- Kruskal (MST) -----------------------------
+// struct DSU {
+//     int n;
+//     vector<int> p, r;
+//     DSU(int n=0): n(n), p(n), r(n,0) { for(int i=0;i<n;i++) p[i]=i; }
+//     int find(int x){ return p[x]==x?x:p[x]=find(p[x]); }
+//     bool unite(int a,int b){
+//         a=find(a); b=find(b);
+//         if(a==b) return false;
+//         if(r[a]<r[b]) swap(a,b);
+//         p[b]=a;
+//         if(r[a]==r[b]) r[a]++;
+//         return true;
+//     }
+// };
+
+// pair<ll, vector<Edge>> kruskal(int n, vector<Edge> edges) {
+//     sort(edges.begin(), edges.end(), [](const Edge& a, const Edge& b){ return a.w < b.w; });
+//     DSU dsu(n);
+//     ll total = 0;
+//     vector<Edge> chosen;
+//     for(auto &e : edges) {
+//         if(dsu.unite(e.u, e.v)) {
+//             total += e.w;
+//             chosen.push_back(e);
+//         }
+//     }
+//     // check if MST spans all vertices: number of chosen edges should be n-1 (for connected)
+//     if((int)chosen.size() != n-1) {
+//         // graph not connected; MST not possible for entire graph - we return components MST sum anyway
+//     }
+//     return {total, chosen};
+// }
+
+// // -------------------------- Prim (MST) -------------------------------
+// pair<ll, vector<Edge>> prim(int n, const vector<vector<AdjEdge>>& adj, int start=0) {
+//     vector<char> vis(n, 0);
+//     vector<ll> key(n, INF);
+//     vector<int> parent(n, -1);
+//     ll total = 0;
+//     // min-heap {key, node, parent}
+//     using T = tuple<ll,int,int>;
+//     priority_queue<T, vector<T>, greater<T>> pq;
+//     key[start] = 0;
+//     pq.emplace(0, start, -1);
+//     while(!pq.empty()) {
+//         auto [k,u,par] = pq.top(); pq.pop();
+//         if(vis[u]) continue;
+//         vis[u] = 1;
+//         parent[u] = par;
+//         total += k;
+//         for(auto &e: adj[u]) {
+//             int v = e.to; ll w = e.w;
+//             if(!vis[v] && w < key[v]) {
+//                 key[v] = w;
+//                 pq.emplace(w, v, u);
+//             }
+//         }
+//     }
+//     vector<Edge> chosen;
+//     for(int v=0; v<n; ++v) if(parent[v]!=-1) chosen.push_back({parent[v], v, key[v]});
+//     // Note: if some nodes unreachable from start, parent remains -1 (except start)
+//     return {total, chosen};
+// }
+
+// // -------------------------- Dijkstra (single-source) -----------------
+// vector<ll> dijkstra(int n, const vector<vector<AdjEdge>>& adj, int src) {
+//     vector<ll> dist(n, INF);
+//     dist[src] = 0;
+//     priority_queue<pair<ll,int>, vector<pair<ll,int>>, greater<pair<ll,int>>> pq;
+//     pq.push({0, src});
+//     while(!pq.empty()) {
+//         auto [d,u] = pq.top(); pq.pop();
+//         if(d != dist[u]) continue;
+//         for(auto &e : adj[u]) {
+//             int v = e.to; ll w = e.w;
+//             if(dist[v] > dist[u] + w) {
+//                 dist[v] = dist[u] + w;
+//                 pq.push({dist[v], v});
+//             }
+//         }
+//     }
+//     return dist;
+// }
+
+// // -------------------------- Problem A: Connected Components -----------
+// int count_connected_components(int V, const vector<pair<int,int>>& edges) {
+//     vector<vector<int>> g(V);
+//     for(auto &e : edges) {
+//         int u=e.first, v=e.second;
+//         g[u].push_back(v);
+//         g[v].push_back(u);
+//     }
+//     vector<char> vis(V, 0);
+//     int components = 0;
+//     for(int i=0;i<V;i++){
+//         if(!vis[i]) {
+//             components++;
+//             // BFS
+//             queue<int> q; q.push(i); vis[i]=1;
+//             while(!q.empty()) {
+//                 int u = q.front(); q.pop();
+//                 for(int v: g[u]) if(!vis[v]) { vis[v]=1; q.push(v); }
+//             }
+//         }
+//     }
+//     return components;
+// }
+
+// // -------------------------- Problem B: Shortest Path in Grid ----------
+// ll shortest_path_grid_dijkstra(const vector<vector<int>>& grid) {
+//     int m = grid.size();
+//     if(m==0) return 0;
+//     int n = grid[0].size();
+//     auto id = [&](int r,int c){ return r*n + c; };
+//     int N = m*n;
+//     vector<ll> dist(N, INF);
+//     priority_queue<pair<ll,int>, vector<pair<ll,int>>, greater<pair<ll,int>>> pq;
+//     dist[id(0,0)] = grid[0][0]; // include starting cell cost
+//     pq.push({dist[id(0,0)], id(0,0)});
+//     int dr[4] = {1,-1,0,0}, dc[4] = {0,0,1,-1};
+//     while(!pq.empty()) {
+//         auto [d,u] = pq.top(); pq.pop();
+//         if(d != dist[u]) continue;
+//         int r = u / n, c = u % n;
+//         if(u == id(m-1,n-1)) return d;
+//         for(int k=0;k<4;k++){
+//             int nr = r + dr[k], nc = c + dc[k];
+//             if(nr<0||nr>=m||nc<0||nc>=n) continue;
+//             int v = id(nr,nc);
+//             ll w = grid[nr][nc]; // cost to move into neighbor = destination cell cost
+//             if(dist[v] > dist[u] + w) {
+//                 dist[v] = dist[u] + w;
+//                 pq.push({dist[v], v});
+//             }
+//         }
+//     }
+//     return dist[id(m-1,n-1)];
+// }
+
+// // -------------------------- Problem C: Network Delay Time -------------
+// int network_delay_time(int N, vector<tuple<int,int,int>> times, int K) {
+//     // nodes are 1..N
+//     vector<vector<AdjEdge>> adj(N+1);
+//     for(auto &t : times) {
+//         int u,v,w; tie(u,v,w) = t;
+//         adj[u].push_back({v, w});
+//     }
+//     vector<ll> dist(N+1, INF);
+//     priority_queue<pair<ll,int>, vector<pair<ll,int>>, greater<pair<ll,int>>> pq;
+//     dist[K] = 0;
+//     pq.push({0, K});
+//     while(!pq.empty()){
+//         auto [d,u] = pq.top(); pq.pop();
+//         if(d != dist[u]) continue;
+//         for(auto &e : adj[u]) {
+//             int v = e.to; ll w = e.w;
+//             if(dist[v] > dist[u] + w) {
+//                 dist[v] = dist[u] + w;
+//                 pq.push({dist[v], v});
+//             }
+//         }
+//     }
+//     ll ans = 0;
+//     for(int i=1;i<=N;i++){
+//         if(dist[i] == INF) return -1;
+//         ans = max(ans, dist[i]);
+//     }
+//     return (int)ans;
+// }
+
+// // -------------------------- Problem D: Number of Islands ----------------
+// int num_islands(vector<vector<int>> grid) {
+//     int m = grid.size();
+//     if(m==0) return 0;
+//     int n = grid[0].size();
+//     vector<vector<char>> vis(m, vector<char>(n,0));
+//     int cnt = 0;
+//     int dr[4] = {1,-1,0,0}, dc[4] = {0,0,1,-1};
+//     for(int i=0;i<m;i++) for(int j=0;j<n;j++) {
+//         if(!vis[i][j] && grid[i][j]==1) {
+//             cnt++;
+//             // BFS
+//             queue<pair<int,int>> q; q.push({i,j}); vis[i][j]=1;
+//             while(!q.empty()){
+//                 auto [r,c] = q.front(); q.pop();
+//                 for(int k=0;k<4;k++){
+//                     int nr = r+dr[k], nc = c+dc[k];
+//                     if(nr<0||nr>=m||nc<0||nc>=n) continue;
+//                     if(!vis[nr][nc] && grid[nr][nc]==1) {
+//                         vis[nr][nc]=1; q.push({nr,nc});
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     return cnt;
+// }
+
+// // -------------------------- helpers for demonstration -----------------
+// void print_vec(const vector<ll>& v) {
+//     for(size_t i=0;i<v.size();++i) {
+//         if(v[i]==INF) cout<<"INF";
+//         else cout<<v[i];
+//         if(i+1<v.size()) cout<<" ";
+//     }
+//     cout<<"\n";
+// }
+// void print_edges(const vector<Edge>& es) {
+//     for(auto &e : es) cout<<e.u<<" - "<<e.v<<" (w="<<e.w<<")\n";
+// }
+
+// // -------------------------- MAIN: examples & simple demonstration -----
+// int main() {
+//     ios::sync_with_stdio(false);
+//     cin.tie(nullptr);
+
+//     cout << "=== Graph algorithms demo ===\n\n";
+
+//     // Example Graph for BFS/DFS/Dijkstra/Kruskal/Prim:
+//     // build a weighted undirected graph with 6 nodes (0..5)
+//     int n = 6;
+//     vector<vector<AdjEdge>> adj(n);
+//     auto addUndir = [&](int u,int v,ll w){
+//         adj[u].push_back({v,w});
+//         adj[v].push_back({u,w});
+//     };
+//     // sample edges
+//     addUndir(0,1,4); addUndir(0,2,3); addUndir(1,2,1);
+//     addUndir(1,3,2); addUndir(2,4,7); addUndir(3,4,3);
+//     addUndir(3,5,1); addUndir(4,5,5);
+
+//     cout << "BFS distances from node 0 (unweighted):\n";
+//     auto bd = bfs_from(0, adj);
+//     for(size_t i=0;i<bd.size();++i) cout<<"node "<<i<<": "<<bd[i]<<"\n";
+//     cout<<"\n";
+
+//     cout << "DFS (iterative) discovery order from 0:\n";
+//     auto dfsi = dfs_iter(0, adj);
+//     for(int u: dfsi) cout<<u<<" "; cout<<"\n\n";
+
+//     cout << "DFS (recursive) discovery order from 0:\n";
+//     auto dfsr = dfs_rec(0, adj);
+//     for(int u: dfsr) cout<<u<<" "; cout<<"\n\n";
+
+//     cout << "Dijkstra distances from node 0 (weighted):\n";
+//     auto dist = dijkstra(n, adj, 0);
+//     print_vec(dist);
+//     cout<<"\n";
+
+//     // Prepare edges list for Kruskal (undirected)
+//     vector<Edge> edges;
+//     for(int u=0;u<n;u++) for(auto &e: adj[u]) if(u < e.to) edges.push_back({u, e.to, e.w});
+//     cout << "Kruskal MST:\n";
+//     auto [kW, kEdges] = kruskal(n, edges);
+//     cout << "Total MST weight (Kruskal): " << kW << "\n";
+//     print_edges(kEdges);
+//     cout << "\n";
+
+//     cout << "Prim MST (starting at 0):\n";
+//     auto [pW, pEdges] = prim(n, adj, 0);
+//     cout << "Total MST weight (Prim, sum of chosen keys): " << pW << "\n";
+//     print_edges(pEdges);
+//     cout << "\n";
+
+//     // ---------------- Additional Questions with given examples ------------
+//     cout << "=== Additional Problems ===\n\n";
+
+//     // 1. Graph Traversal Count (connected components)
+//     {
+//         cout << "1) Connected components count (example):\n";
+//         int V = 5; vector<pair<int,int>> E = {{0,1},{1,2},{3,4}};
+//         int comps = count_connected_components(V, E);
+//         cout << "Input: V=5 E=3 edges=[[0,1],[1,2],[3,4]]\n";
+//         cout << "Output: " << comps << "  (expected 2)\n\n";
+//     }
+
+//     // 2. Shortest Path in Grid
+//     {
+//         cout << "2) Shortest Path in Grid using Dijkstra (example):\n";
+//         vector<vector<int>> grid = {{1,2,3},{4,5,6},{7,8,9}};
+//         cout << "Grid:\n";
+//         for(auto &row: grid) { for(auto x:row) cout<<x<<" "; cout<<"\n"; }
+//         ll cost = shortest_path_grid_dijkstra(grid);
+//         cout << "Minimum total cost from (0,0) to (2,2): " << cost << " (expected 21)\n\n";
+//     }
+
+//     // 3. Network Delay Time
+//     {
+//         cout << "3) Network Delay Time (example):\n";
+//         int N = 4; int K = 2;
+//         vector<tuple<int,int,int>> times = {{2,1,1},{2,3,1},{3,4,1}};
+//         int ans = network_delay_time(N, times, K);
+//         cout << "Input: N=4 K=2 times=[[2,1,1],[2,3,1],[3,4,1]]\n";
+//         cout << "Output: " << ans << " (expected 2)\n\n";
+//     }
+
+//     // 4. Number of Islands
+//     {
+//         cout << "4) Number of Islands (example):\n";
+//         vector<vector<int>> grid = {{1,1,0},{0,1,0},{1,0,1}};
+//         cout << "Grid:\n";
+//         for(auto &r: grid){ for(int x: r) cout<<x<<" "; cout<<"\n"; }
+//         int c = num_islands(grid);
+//         cout << "Output: " << c << " (expected 3)\n\n";
+//     }
+
+//     cout << "=== End of demo ===\n";
+//     return 0;
+// }
+
+
